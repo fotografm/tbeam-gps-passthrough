@@ -145,6 +145,41 @@ Tools → Port          → (your T-Beam port)
 
 Open `tbeam_gps_passthrough/tbeam_gps_passthrough.ino`, then click **Upload** (→ arrow).
 
+#### 6. Export a merged.bin for the web flasher or esptool
+
+Arduino IDE can export a single self-contained binary that includes the bootloader, partition table, and application merged at offset 0x0 — exactly what Options A and B need.
+
+1. With the sketch open and the board/settings configured as above, click:
+   ```
+   Sketch → Export Compiled Binary
+   ```
+   Arduino IDE 2.x compiles the sketch and writes the output files into a `build/` subfolder inside the sketch directory.
+
+2. Navigate to that build folder. The path will be something like:
+   ```
+   tbeam_gps_passthrough/build/esp32.esp32.ttgo-t1/
+   ```
+   Inside you will find several `.bin` files:
+
+   | File | Contents | Flash offset |
+   |------|----------|--------------|
+   | `tbeam_gps_passthrough.ino.bootloader.bin` | Bootloader only | 0x1000 |
+   | `tbeam_gps_passthrough.ino.partitions.bin` | Partition table | 0x8000 |
+   | `tbeam_gps_passthrough.ino.bin` | Application only | 0x10000 |
+   | `tbeam_gps_passthrough.ino.merged.bin` | **All three merged** | **0x0** |
+
+3. Use `tbeam_gps_passthrough.ino.merged.bin` (rename it to `merged.bin` for clarity).  
+   This is the file you upload to the GitHub Release and flash at offset `0x0`.
+
+> **Arduino IDE 1.x:** The merged binary is not produced automatically. Use the Sketch → Export Compiled Binary option and then manually merge with esptool:
+> ```bash
+> esptool.py merge_bin \
+>   --output merged.bin \
+>   0x1000  tbeam_gps_passthrough.ino.bootloader.bin \
+>   0x8000  tbeam_gps_passthrough.ino.partitions.bin \
+>   0x10000 tbeam_gps_passthrough.ino.bin
+> ```
+
 ---
 
 ## Verifying it works
