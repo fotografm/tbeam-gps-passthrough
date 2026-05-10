@@ -1,0 +1,14 @@
+# Arduino IDE build artifacts
+build/
+*.bin
+*.elf
+*.map
+
+# Arduino IDE preferences
+*.bak
+
+# macOS
+.DS_Store
+
+# Linux
+*~
