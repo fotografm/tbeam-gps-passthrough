@@ -106,9 +106,74 @@ Hard resetting via RTS pin...
 
 ---
 
-### Option C — Arduino IDE (build from source)
+### Option C — arduino-cli (build from source, no IDE required)
 
-Use this if you want to modify the sketch.
+Use this to compile and produce `merged.bin` entirely from the command line.
+
+#### 1. Install arduino-cli
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/.local/bin sh
+```
+
+Verify:
+```bash
+arduino-cli version
+```
+
+#### 2. Add ESP32 board support and install the core
+
+```bash
+arduino-cli config init
+arduino-cli config add board_manager.additional_urls \
+  https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+arduino-cli core update-index
+arduino-cli core install esp32:esp32
+```
+
+The core download is ~250 MB — it installs once into `~/.arduino15`.
+
+#### 3. Compile and export
+
+```bash
+arduino-cli compile \
+  --fqbn esp32:esp32:t-beam:UploadSpeed=921600,FlashFreq=80 \
+  --export-binaries \
+  --output-dir ./build \
+  ./tbeam_gps_passthrough
+```
+
+On success you will see something like:
+```
+Sketch uses 307236 bytes (23%) of program storage space.
+Global variables use 23540 bytes (7%) of dynamic memory.
+```
+
+The `build/` folder will contain:
+
+| File | Contents | Flash offset |
+|------|----------|--------------|
+| `tbeam_gps_passthrough.ino.bootloader.bin` | Bootloader only | 0x1000 |
+| `tbeam_gps_passthrough.ino.partitions.bin` | Partition table | 0x8000 |
+| `tbeam_gps_passthrough.ino.bin` | Application only | 0x10000 |
+| `tbeam_gps_passthrough.ino.merged.bin` | **All three merged** | **0x0** |
+
+Use `tbeam_gps_passthrough.ino.merged.bin` with the web flasher (Option A) or esptool (Option B) at offset `0x0`.
+
+#### 4. Flash directly via arduino-cli (optional)
+
+If the T-Beam is plugged in and you want to compile and flash in one step:
+
+```bash
+arduino-cli compile --upload \
+  --fqbn esp32:esp32:t-beam:UploadSpeed=921600,FlashFreq=80 \
+  --port /dev/ttyUSB0 \
+  ./tbeam_gps_passthrough
+```
+
+---
+
+### Option D — Arduino IDE (build from source)
 
 #### 1. Install Arduino IDE 2.x
 
@@ -126,10 +191,8 @@ Download from [arduino.cc](https://www.arduino.cc/en/software).
 #### 3. Select the correct board
 
 ```
-Tools → Board → ESP32 Arduino → TTGO LoRa32-OLED v1
+Tools → Board → ESP32 Arduino → T-Beam
 ```
-
-(Some board package versions list it as "T1". Either works — the pin mapping is the same.)
 
 #### 4. Set upload options
 
@@ -157,7 +220,7 @@ Arduino IDE can export a single self-contained binary that includes the bootload
 
 2. Navigate to that build folder. The path will be something like:
    ```
-   tbeam_gps_passthrough/build/esp32.esp32.ttgo-t1/
+   tbeam_gps_passthrough/build/esp32.esp32.t-beam/
    ```
    Inside you will find several `.bin` files:
 

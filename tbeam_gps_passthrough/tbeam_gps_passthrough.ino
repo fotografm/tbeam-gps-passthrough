@@ -32,8 +32,8 @@
  *
  * BOARD SELECTION IN ARDUINO IDE
  * --------------------------------
- *   Tools → Board → ESP32 Arduino → TTGO LoRa32-OLED v1
- *   (listed as "T1" in some board package versions)
+ *   Tools → Board → ESP32 Arduino → T-Beam
+ *   FQBN: esp32:esp32:t-beam
  *
  *   If you don't see that board, add the ESP32 boards URL:
  *     https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
